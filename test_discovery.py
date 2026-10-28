@@ -1,6 +1,6 @@
 import unittest,copy
 import engine,learning
-from test_engine import start,read_all,choose
+from test_engine import start,read_all,choose,checkin
 class DiscoveryTests(unittest.TestCase):
  def ask(self,s,i):return read_all(engine.act(s,'protagonist','select',{'id':f'ask:{i}'}))
  def test_opening_and_candidate_reveal(self):
@@ -17,7 +17,7 @@ class DiscoveryTests(unittest.TestCase):
   self.assertTrue(all(o['thread']!='project' for o in engine.options(s) if o['id'].startswith('ask:')))
   s=self.ask(s,1);s=self.ask(s,2);self.assertTrue(any(o['id']=='commit:0' for o in engine.options(s)))
  def test_expired_information_cannot_backfill_decision(self):
-  s=choose(start(),2);s=engine.act(s,'protagonist','select',{'id':'ask:2'});s=read_all(engine.act(s,'protagonist','select',{'id':'commit:1'}))
+  s=checkin(choose(start(),2));s=engine.act(s,'protagonist','select',{'id':'ask:2'});s=read_all(engine.act(s,'protagonist','select',{'id':'commit:1'}))
   # The pending answer was not read at commitment. The historical evidence remains unchanged.
   self.assertNotIn('policy',s['history'][-1]['facts']);self.assertNotIn('policy',learning.known(s))
   self.assertTrue(any(o['status']=='expired' for o in s['opportunities'] if o['step']==2))
@@ -30,7 +30,7 @@ class DiscoveryTests(unittest.TestCase):
   for i in (1,2):s=self.ask(s,i)
   s=choose(s,0);s=choose(s,0);s=self.ask(s,0);s=choose(s,0)
   for i in (0,1,2):s=self.ask(s,i)
-  return choose(s,0)
+  return checkin(choose(s,0))
  def test_intern_bonus_requires_evidence(self):
   s=self.bonus_state();self.assertEqual(s['reply_bonus'],'intern_feedback');self.assertTrue(all(o['thread']=='sam' for o in engine.options(s)))
   a=engine.act(s,'protagonist','select',{'id':'feedback:encourage'});b=engine.act(s,'protagonist','select',{'id':'feedback:shout'});self.assertEqual(a['day'],b['day']);self.assertEqual(a['spent'],b['spent']);self.assertGreater(a['assessment']['people'],b['assessment']['people'])
