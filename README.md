@@ -4,11 +4,11 @@ An authored two-player project-management simulation. Alex manages delivery whil
 
 ## Online play
 
-Open the deployed website, create a project and share its room code and game address. The mentor chooses Join as mentor. Reports, conversations and interventions synchronize live. Keep your private role link to return to the same room.
+Open https://under-pressure-game.onrender.com, create a project and share its room code and game address. The mentor chooses Join as mentor. Reports, conversations and interventions synchronize live. A private role link can reopen a room while the temporary server session remains available. Rooms reset when hosting restarts or sleeps.
 
 ## Deployment
 
-Run the Dockerfile as one web-service instance with persistent storage mounted at `/data`. The server reads `PORT`, `STATE_DIRECTORY`, and `PUBLIC_ORIGIN` or Render’s automatic `RENDER_EXTERNAL_URL`. Health endpoint: `/health`. See DEPLOYMENT.md for configuration and storage requirements.
+The current deployment uses one free Python web-service instance and temporary storage at `/tmp/under-pressure`, with no external database or persistent disk. The server reads `PORT`, `STATE_DIRECTORY`, and `PUBLIC_ORIGIN` or Render’s automatic `RENDER_EXTERNAL_URL`. Health endpoint: `/health`. See DEPLOYMENT.md for configuration and storage requirements.
 
 ## Local development
 
