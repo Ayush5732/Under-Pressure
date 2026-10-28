@@ -1,9 +1,7 @@
-# Deployment preparation
+# Free Render deployment
 
-The application runs as one Python service with a shared SQLite database. Run one instance only. The live subscription uses this process's room-change notifications.
+Use a free Python web service, one instance, with build command `pip install -r requirements.txt` and start command `python server.py --no-browser --host 0.0.0.0`. PORT and RENDER_EXTERNAL_URL are supplied by Render. Health endpoint: /health.
 
-The Dockerfile reads PORT, supports Render's RENDER_EXTERNAL_URL for canonical HTTPS invitations and origin validation, and stores saves under STATE_DIRECTORY (default /data in Docker). Mount persistent storage at /data before creating real rooms. Container-local storage without a persistent mount does not preserve saves across replacement.
+Set DATABASE_URL to the internal connection URL of a free Render Postgres database in the same workspace and region. Never put this value in Git. Saved rooms use Postgres when configured, and local SQLite remains available for development.
 
-Render configuration: Docker runtime; health check /health; one instance; persistent disk mounted at /data. A persistent disk requires an appropriate paid service. Choose and approve that plan before provisioning; no billing or hosting resource has been created by preparing these files.
-
-No credentials, existing rooms or chat saves belong in the Git repository. Existing saves may be migrated separately by the owner. Protect original saves until the hosted deployment and room tests pass.
+Free Render Postgres expires after 30 days under the current free-tier terms; it is suitable for temporary testing, not permanent free storage. Free web services can sleep when inactive. No paid service, disk or automatic upgrade is authorized.

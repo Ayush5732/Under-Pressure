@@ -8,7 +8,22 @@ import engine
 ROOT=Path(__file__).resolve().parent;DB=Path(os.environ.get('STATE_DIRECTORY',str(ROOT)))/'saves-v3.sqlite3';LOCK=threading.Lock();CHANGED=threading.Condition(LOCK)
 SHARE_URL=None;JOIN_FAILURES={};LIVE_WAIT=20
 
+class HostedConnection:
+ def __init__(self,url):
+  import psycopg
+  self.connection=psycopg.connect(url,connect_timeout=10)
+ def execute(self,sql,args=()):return self.connection.execute(sql.replace('?', '%s'),args)
+ def close(self):self.connection.close()
+ def __enter__(self):return self
+ def __exit__(self,kind,value,tb):
+  try:
+   if kind:self.connection.rollback()
+   else:self.connection.commit()
+  finally:self.close()
+
 def connect():
+ if os.environ.get('DATABASE_URL'):
+  c=HostedConnection(os.environ['DATABASE_URL']);c.execute('CREATE TABLE IF NOT EXISTS rooms (code TEXT PRIMARY KEY,player TEXT,partner TEXT,state TEXT)');return c
  DB.parent.mkdir(parents=True,exist_ok=True)
  c=sqlite3.connect(DB);c.execute('CREATE TABLE IF NOT EXISTS rooms (code TEXT PRIMARY KEY,player TEXT,partner TEXT,state TEXT)');return c
 
@@ -119,7 +134,7 @@ def main():
  global DB,SHARE_URL
  p=argparse.ArgumentParser();p.add_argument('--port',type=int,default=int(os.environ.get('PORT','8765')));p.add_argument('--host',default='0.0.0.0',help='0.0.0.0 permits other devices on the local network; use 127.0.0.1 for this computer only.');p.add_argument('--no-browser',action='store_true');p.add_argument('--db',type=Path);a=p.parse_args()
  if a.db:DB=a.db
- connect().close()
+ with connect():pass
  try:http=ThreadingHTTPServer((a.host,a.port),Handler)
  except OSError as e:p.exit(1,f'{e}\nClose the old server or use --port 8766.\n')
  local=f'http://127.0.0.1:{a.port}';addresses=lan_addresses() if a.host=='0.0.0.0' else ([a.host] if a.host!='127.0.0.1' else [])
